@@ -71,6 +71,7 @@ ext.libraries = [
 
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
+        stetho_okhttp           : "com.facebook.stetho:stetho-okhttp:$versions.stetho",
         leakCanary              : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",
         tinyDancer              : "com.github.brianPlummer:tinydancer:$versions.tinyDancer",
         lynx                    : "com.github.pedrovgs:lynx:$versions.lynx",

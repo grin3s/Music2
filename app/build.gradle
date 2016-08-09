@@ -100,6 +100,7 @@ dependencies {
 
     // Developer tools (Developer Settings)
     compile libraries.stetho
+    compile libraries.stetho_okhttp
     compile libraries.leakCanary
     compile libraries.tinyDancer
     compile libraries.lynx

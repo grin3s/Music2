@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +42,6 @@ public class DbBackend implements ArtistsContract {
             + "?,"
             + "?)";
 
-//    select x1.id as id, x1.small as small, x1.large as large, group_concat(x2.genre) as genres from
-//      (select t.id as id, t.small as small, Images.name as large from
-//            (select Artists.id as id, Images.name as small, Artists.large_cover as large from
-//                    (Artists
-//                    left join Images on Artists.small_cover = Images.id)) t
-//      left join Images on t.large=Images.id) x1
-//    left join
-//            (select ArtistsGenres.artist_id as artist_id, Genres.name as genre from ArtistsGenres
-//                    left join Genres on ArtistsGenres.genre_id = Genres.id) x2
-//    where x1.id = x2.artist_id group by x1.id;
-
-//    String ARTIST_ID = "artist_id";
-//    String NAME = "name";
-//    String SMALL_COVER = "small_cover";
-//    String LARGE_COVER = "large_cover";
-//    String ALBUMS = "albums";
-//    String TRACKS = "tracks";
-//    String LINK = "link";
-//    String DESCRIPTION = "description";
-
     private static final String ARTISTS_JOIN_IMAGES_ON_SMALL_COVER_QUERY
             = "SELECT " + ARTISTS + "." + Artists.ID + " as id, "
             + IMAGES + "." + Images.PATH + " as small_cover, "
@@ -85,15 +66,6 @@ public class DbBackend implements ArtistsContract {
             + ARTISTS_GENRES + " LEFT JOIN " + GENRES + " ON "
             + ARTISTS_GENRES + "." + ArtistsGenres.GENRE_ROWID + "=" + GENRES + "." + Genres.ID;
 
-//    String ARTIST_ID = "artist_id";
-//    String NAME = "name";
-//    String SMALL_COVER = "small_cover";
-//    String LARGE_COVER = "large_cover";
-//    String ALBUMS = "albums";
-//    String TRACKS = "tracks";
-//    String LINK = "link";
-//    String DESCRIPTION = "description";
-//    String GENRES = "genres";
 
     public static final String GET_ALL_ARTISTS_QUERY
             = "SELECT artist_id as " + ArtistMainView.ARTIST_ID + ","
@@ -110,32 +82,46 @@ public class DbBackend implements ArtistsContract {
             + " X1.id = X2.artist_rowid group by X1.id";
 
 
-    DbBackend(Context context) {
+    public DbBackend(Context context) {
         mDbOpenHelper = new DbOpenHelper(context);
     }
 
-    @VisibleForTesting
     DbBackend(DbOpenHelper dbOpenHelper) {
         mDbOpenHelper = dbOpenHelper;
     }
 
-    private long insertImage(SQLiteDatabase db, String path) {
-        ContentValues tmpValues = new ContentValues();
-        tmpValues.put(Images.PATH, path);
-        return db.insertWithOnConflict(IMAGES, null, tmpValues, SQLiteDatabase.CONFLICT_IGNORE);
+    private long insertIfNotExistsImage(SQLiteDatabase db, String path) {
+        Long rowid = getImageRowId(path);
+        if (rowid == null) {
+            //this is not in the db yet
+            ContentValues tmpValues = new ContentValues();
+            tmpValues.put(Images.PATH, path);
+            return db.insert(IMAGES, null, tmpValues);
+        }
+        else {
+            return rowid;
+        }
     }
 
-    private long insertGenre(SQLiteDatabase db, String genre) {
-        ContentValues tmpValues = new ContentValues();
-        tmpValues.put(Genres.NAME, genre);
-        return db.insertWithOnConflict(GENRES, null, tmpValues, SQLiteDatabase.CONFLICT_IGNORE);
+    private long insertIfNotExistsGenre(SQLiteDatabase db, String genre) {
+        Long rowid = getGenreRowid(genre);
+        if (rowid == null) {
+            //genre is not in db
+            ContentValues tmpValues = new ContentValues();
+            tmpValues.put(Genres.NAME, genre);
+            return db.insert(GENRES, null, tmpValues);
+        }
+        else {
+            return rowid;
+        }
+
     }
 
     private long insertArtistsGenre(SQLiteDatabase db, long artistRowId, long genreRowId) {
         ContentValues tmpValues = new ContentValues();
         tmpValues.put(ArtistsGenres.ARTIST_ROWID, artistRowId);
         tmpValues.put(ArtistsGenres.GENRE_ROWID, genreRowId);
-        return db.insertWithOnConflict(ARTISTS_GENRES, null, tmpValues, SQLiteDatabase.CONFLICT_IGNORE);
+        return db.insert(ARTISTS_GENRES, null, tmpValues);
     }
 
     public void insertNewArtist(ContentValues values) {
@@ -146,17 +132,19 @@ public class DbBackend implements ArtistsContract {
         try {
             //insert small_cover
             String small_cover = values.getAsString(ArtistMainView.SMALL_COVER);
-            long smallCoverRowid = insertImage(db, small_cover);
+            long smallCoverRowid = insertIfNotExistsImage(db, small_cover);
 
             //insert large_cover
             String large_cover = values.getAsString(ArtistMainView.LARGE_COVER);
-            long largeCoverRowid = insertImage(db, large_cover);
+            long largeCoverRowid = insertIfNotExistsImage(db, large_cover);
 
             List<Long> genresRowIds = new ArrayList<>();
             //insert genres
             String genresStr = values.getAsString(ArtistMainView.GENRES);
             for (String genre : genresStr.split(",")) {
-                genresRowIds.add(insertGenre(db, genre));
+                long rowid = insertIfNotExistsGenre(db, genre);
+                Log.d("ARTIST GENRE", genre + " " + Long.toString(rowid));
+                genresRowIds.add(rowid);
             }
 
             //inserting artists
@@ -169,7 +157,8 @@ public class DbBackend implements ArtistsContract {
             tmpValues.put(Artists.LINK, values.getAsString(ArtistMainView.LINK));
             tmpValues.put(Artists.DESCRIPTION, values.getAsString(ArtistMainView.DESCRIPTION));
 
-            long artistRowId = db.insertWithOnConflict(ARTISTS, null, tmpValues, SQLiteDatabase.CONFLICT_IGNORE);
+            long artistRowId = db.insertOrThrow(ARTISTS, null, tmpValues);
+            Log.d("ARTIST_ROW", Long.toString(artistRowId));
 
             //inserting ArtistsGenres
             for (long genreRowId : genresRowIds) {
@@ -188,5 +177,33 @@ public class DbBackend implements ArtistsContract {
         return mDbOpenHelper.getReadableDatabase().rawQuery(GET_ALL_ARTISTS_QUERY, null);
     }
 
+    private Long getGenreRowid(String genre) {
+        Cursor c = mDbOpenHelper.getReadableDatabase().query(GENRES,
+                new String[] {Genres.ID},
+                Genres.NAME + "=?",
+                new String[] {genre},
+                null,
+                null,
+                null);
 
+        return DbUtils.getResultLongAndClose(c);
+    }
+
+    private Long getImageRowId(String imagePath) {
+        Cursor c = mDbOpenHelper.getReadableDatabase().query(IMAGES,
+                new String[] {Images.ID},
+                Images.PATH + "=?",
+                new String[] {imagePath},
+                null,
+                null,
+                null);
+
+        return DbUtils.getResultLongAndClose(c);
+    }
+
+
+    public void deleteImage() {
+        mDbOpenHelper.getWritableDatabase().execSQL("delete from images where rowid=1");
+        Log.d("ARTIST", "DELETE IMAGE");
+    }
 }

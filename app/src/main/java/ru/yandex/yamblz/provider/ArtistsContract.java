@@ -52,31 +52,4 @@ public interface ArtistsContract {
         String GENRES = "genres";
     }
 
-//    enum ArtistMainView {
-//        ARTIST_ID(0, "artist_id"),
-//        NAME(1, "name"),
-//        SMALL_COVER(2, "small_cover"),
-//        LARGE_COVER(3, "large_cover"),
-//        ALBUMS(4, "albums"),
-//        TRACKS(5, "tracks"),
-//        LINK(6, "link"),
-//        DESCRIPTION(7, "descriptio"),
-//        GENRES(8, "genres");
-//
-//        int columnIdx;
-//        String columnName;
-//
-//        ArtistMainView(int columnIdx, String columnName) {
-//            this.columnIdx = columnIdx;
-//            this.columnName = columnName;
-//        }
-//
-//        public int getColumnIdx() {
-//            return columnIdx;
-//        }
-//
-//        public String getColumnName() {
-//            return columnName;
-//        }
-//    }
 }
