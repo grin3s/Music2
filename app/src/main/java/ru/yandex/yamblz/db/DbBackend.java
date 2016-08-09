@@ -127,6 +127,7 @@ public class DbBackend implements ArtistsContract {
 
     private long insertGenre(SQLiteDatabase db, String genre) {
         ContentValues tmpValues = new ContentValues();
+        tmpValues.put(Genres.NAME, genre);
         return db.insertWithOnConflict(GENRES, null, tmpValues, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
