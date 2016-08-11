@@ -19,8 +19,8 @@ public class DbOpenHelper extends SQLiteOpenHelper implements ArtistsContract {
             + Artists.ID + " INTEGER PRIMARY KEY, "
             + Artists.ARTIST_ID + " INTEGER UNIQUE NOT NULL,"
             + Artists.NAME + " TEXT UNIQUE NOT NULL, "
-            + Artists.SMALL_COVER + " INTEGER REFERENCES " + IMAGES + "(" + Images.ID + "), "
-            + Artists.LARGE_COVER + " INTEGER REFERENCES " + IMAGES + "(" + Images.ID + "), "
+            + Artists.SMALL_COVER + " INTEGER REFERENCES " + IMAGES + "(" + Images.ID + ") ON DELETE SET NULL, "
+            + Artists.LARGE_COVER + " INTEGER REFERENCES " + IMAGES + "(" + Images.ID + ") ON DELETE SET NULL, "
             + Artists.ALBUMS + " INTEGER, "
             + Artists.TRACKS + " INTEGER, "
             + Artists.LINK + " TEXT, "
@@ -39,8 +39,9 @@ public class DbOpenHelper extends SQLiteOpenHelper implements ArtistsContract {
 
     public static final String CREATE_ARTISTS_GENRES = "CREATE TABLE " + ARTISTS_GENRES + " ("
             + ArtistsGenres.ID + " INTEGER PRIMARY KEY, "
-            + ArtistsGenres.ARTIST_ROWID + " INTEGER REFERENCES " + ARTISTS + "(" + Artists.ID + "), "
-            + ArtistsGenres.GENRE_ROWID + " INTEGER REFERENCES " + GENRES + "(" + Genres.ID + ") "
+            + ArtistsGenres.ARTIST_ROWID + " INTEGER REFERENCES " + ARTISTS + "(" + Artists.ID + ") ON DELETE CASCADE, "
+            + ArtistsGenres.GENRE_ROWID + " INTEGER REFERENCES " + GENRES + "(" + Genres.ID + ") ON DELETE CASCADE, "
+            + "UNIQUE (" + ArtistsGenres.ARTIST_ROWID + ", " + ArtistsGenres.GENRE_ROWID + ")"
             + ")";
 
     public DbOpenHelper(Context context) {
@@ -69,10 +70,10 @@ public class DbOpenHelper extends SQLiteOpenHelper implements ArtistsContract {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Updating for dev versions!
-        db.execSQL("DROP TABLE " + ARTISTS);
-        db.execSQL("DROP TABLE " + IMAGES);
-        db.execSQL("DROP TABLE " + GENRES);
-        db.execSQL("DROP TABLE " + ARTISTS_GENRES);
+        db.execSQL("DROP TABLE IF EXISTS" + ARTISTS);
+        db.execSQL("DROP TABLE IF EXISTS" + IMAGES);
+        db.execSQL("DROP TABLE IF EXISTS" + GENRES);
+        db.execSQL("DROP TABLE IF EXISTS" + ARTISTS_GENRES);
         onCreate(db);
     }
 }

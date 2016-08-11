@@ -1,11 +1,23 @@
 package ru.yandex.yamblz.provider;
 
+import android.content.ContentResolver;
+import android.net.Uri;
+
 /**
  * Created by grin3s on 08.08.16.
  */
 
 public interface ArtistsContract {
     String DB_NAME = "main.sqlite";
+
+    // Content provider authority.
+    String CONTENT_AUTHORITY = "ru.yandex.yamblz.provider";
+
+    // base uri
+    Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+
+    String PATH_ARTISTS = "artists";
+    String PATH_GENRES = "genres";
 
 
     String ARTISTS = "artists";
@@ -41,6 +53,7 @@ public interface ArtistsContract {
     }
 
     interface ArtistMainView {
+        String ID = "_id";
         String ARTIST_ID = "artist_id";
         String NAME = "name";
         String SMALL_COVER = "small_cover";
@@ -50,5 +63,11 @@ public interface ArtistsContract {
         String LINK = "link";
         String DESCRIPTION = "description";
         String GENRES = "genres";
+
+        String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
+        String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
     }
+
 }

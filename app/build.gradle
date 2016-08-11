@@ -84,6 +84,7 @@ android {
 
 // Libraries declared in dependencies.gradle in the root of the project
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile libraries.dagger
     apt libraries.daggerCompiler
 
@@ -100,6 +101,7 @@ dependencies {
 
     // Developer tools (Developer Settings)
     compile libraries.stetho
+    compile libraries.stetho_okhttp
     compile libraries.leakCanary
     compile libraries.tinyDancer
     compile libraries.lynx
@@ -121,6 +123,7 @@ dependencies {
         exclude module: 'recyclerview-v7'
         exclude module: 'support-v4'
     }
+    compile libraries.gson
 }
 
 configurations.all {

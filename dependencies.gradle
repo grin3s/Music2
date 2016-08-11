@@ -37,6 +37,8 @@ ext.versions = [
         equalsVerifier               : '1.7.5',
         mockito                      : '1.10.19',
         supportTestRunner            : '0.5',
+
+        gson                         : '2.7'
 ]
 
 ext.gradlePlugins = [
@@ -69,6 +71,7 @@ ext.libraries = [
 
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
+        stetho_okhttp           : "com.facebook.stetho:stetho-okhttp:$versions.stetho",
         leakCanary              : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",
         tinyDancer              : "com.github.brianPlummer:tinydancer:$versions.tinyDancer",
         lynx                    : "com.github.pedrovgs:lynx:$versions.lynx",
@@ -85,4 +88,6 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+
+        gson                    : "com.google.code.gson:gson:$versions.gson",
 ]
