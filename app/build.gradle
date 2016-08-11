@@ -84,6 +84,7 @@ android {
 
 // Libraries declared in dependencies.gradle in the root of the project
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile libraries.dagger
     apt libraries.daggerCompiler
 

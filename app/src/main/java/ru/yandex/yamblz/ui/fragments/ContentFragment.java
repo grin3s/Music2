@@ -2,6 +2,8 @@ package ru.yandex.yamblz.ui.fragments;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,6 +28,7 @@ import ru.yandex.yamblz.api.ArtistApi;
 import ru.yandex.yamblz.db.DbBackend;
 import ru.yandex.yamblz.models.Artist;
 import ru.yandex.yamblz.provider.ArtistsBuilder;
+import ru.yandex.yamblz.provider.ArtistsContract;
 
 import static android.media.CamcorderProfile.get;
 
@@ -51,29 +54,38 @@ public class ContentFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         final Context context = getContext();
-        mExecutor.execute(() -> {
-            synchronized (artistList) {
-                try {
-                    artistList = ArtistApi.loadArtistsFromJson(context.getApplicationContext().getAssets().open("artists.json"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//        mExecutor.execute(() -> {
+//            synchronized (artistList) {
+//                try {
+//                    artistList = ArtistApi.loadArtistsFromJson(context.getApplicationContext().getAssets().open("artists.json"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//        button.setOnClickListener(v -> mExecutor.execute(() -> {
+//            DbBackend dbBackend = new DbBackend(context);
+//            Artist tmpArtist = artistList.get(lastArtist++);
+//            Log.d("ARTIST", tmpArtist.toString());
+//            dbBackend.insertNewArtist(ArtistsBuilder.artistToContentValues(tmpArtist));
+//            Log.d("ADDED", "ARTIST");
+//        }));
+//
+//        buttonDelete.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                DbBackend dbBackend = new DbBackend(context);
+//                dbBackend.deleteImage();
+//            }
+//        });
+        Cursor c = getContext().getContentResolver().query(Uri.parse("content://ru.yandex.yamblz.provider/artists"),
+                null, null, null, null);
+        if (c != null) {
+            while (c.moveToNext()) {
+                Artist artist = ArtistsBuilder.createArtistFromCursor(c);
+                Log.d("ARTIST", artist.toString());
             }
-        });
-        button.setOnClickListener(v -> mExecutor.execute(() -> {
-            DbBackend dbBackend = new DbBackend(context);
-            Artist tmpArtist = artistList.get(lastArtist++);
-            Log.d("ARTIST", tmpArtist.toString());
-            dbBackend.insertNewArtist(ArtistsBuilder.artistToContentValues(tmpArtist));
-            Log.d("ADDED", "ARTIST");
-        }));
-
-        buttonDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DbBackend dbBackend = new DbBackend(context);
-                dbBackend.deleteImage();
-            }
-        });
+            c.close();
+        }
     }
 }
